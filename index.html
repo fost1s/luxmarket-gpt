@@ -1,269 +1,557 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ссылка на оплату</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ссылка на оплату ChatGPT — старый Stripe</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0c0c0c;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 24px;
+  }
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      font-family: Arial, sans-serif;
-      color: #f8fafc;
-      background:
-        radial-gradient(circle at top left, rgba(14, 165, 233, 0.22), transparent 32%),
-        radial-gradient(circle at top right, rgba(16, 185, 129, 0.18), transparent 30%),
-        linear-gradient(135deg, #020617, #0f172a 55%, #020617);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-    }
+  .outer {
+    max-width: 900px;
+    width: 100%;
+  }
 
-    .wrapper {
-      width: 100%;
-      max-width: 950px;
-      background: rgba(15, 23, 42, 0.88);
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      border-radius: 22px;
-      padding: 26px;
-      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
-    }
+  .card {
+    background: #141414;
+    border: 1px solid #272727;
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+  }
 
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
+  /* header */
+  .header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 24px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #1f1f1f;
+  }
 
-    .icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 14px;
-      background: rgba(14, 165, 233, 0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      color: #67e8f9;
-    }
+  .icon {
+    width: 40px; height: 40px;
+    background: #1c1c1c;
+    border: 1px solid #2c2c2c;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
 
-    h1 {
-      margin: 0 0 6px;
-      font-size: 26px;
-      line-height: 1.2;
-    }
+  .icon svg { width: 18px; height: 18px; stroke: #00c27a; }
 
-    .subtitle {
-      margin: 0;
-      color: #cbd5e1;
-      font-size: 15px;
-    }
+  .header-text h1 {
+    font-size: 20px;
+    font-weight: 700;
+    color: #f0f0f0;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
 
-    .grid {
-      display: grid;
-      grid-template-columns: 1.15fr 0.85fr;
-      gap: 22px;
-    }
+  .header-text p {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.4;
+  }
 
-    .card {
-      min-height: 360px;
-      padding: 22px;
-      border-radius: 18px;
-      background: rgba(2, 6, 23, 0.38);
-      border: 1px solid rgba(148, 163, 184, 0.18);
-    }
+  .header-text p b { color: #888; font-weight: 600; }
 
-    h2 {
-      margin: 0 0 16px;
-      font-size: 18px;
-      line-height: 1.35;
-    }
+  /* two columns — fixed widths to prevent overflow */
+  .cols {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+    gap: 0;
+    align-items: start;
+  }
 
-    .note {
-      margin-bottom: 18px;
-      padding-left: 14px;
-      border-left: 3px solid #3b82f6;
-      color: #e2e8f0;
-      font-size: 15px;
-      line-height: 1.55;
-    }
+  .col-left {
+    padding-right: 24px;
+    border-right: 1px solid #1f1f1f;
+    min-width: 0;
+  }
 
-    .btn {
-      display: block;
-      width: fit-content;
-      min-width: 240px;
-      padding: 15px 22px;
-      margin: 12px 0;
-      border: none;
-      border-radius: 13px;
-      font-size: 15px;
-      font-weight: 700;
-      cursor: pointer;
-      text-decoration: none;
-      transition: 0.2s;
-    }
+  .col-right {
+    padding-left: 24px;
+    min-width: 0;
+  }
 
-    .btn:hover {
-      transform: translateY(-2px);
-      filter: brightness(1.08);
-    }
+  .col-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #e0e0e0;
+    margin-bottom: 12px;
+    line-height: 1.4;
+  }
 
-    .btn-green {
-      color: #031014;
-      background: linear-gradient(135deg, #34d399, #10b981);
-      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.28);
-    }
+  /* tip */
+  .tip {
+    border-left: 2px solid #00c27a;
+    padding: 10px 12px;
+    background: #0f1a14;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    color: #6a8870;
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
 
-    .btn-blue {
-      color: white;
-      background: linear-gradient(135deg, #60a5fa, #3b82f6);
-      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.28);
-    }
+  .tip b { color: #a0c8a8; font-weight: 600; }
 
-    .small {
-      margin-top: 18px;
-      color: #94a3b8;
-      font-size: 14px;
-      line-height: 1.5;
-    }
+  /* main CTA */
+  .btn-green {
+    display: block;
+    width: 100%;
+    background: #00c27a;
+    color: #000;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    padding: 13px 16px;
+    border-radius: 9px;
+    text-decoration: none;
+    cursor: grab;
+    margin-bottom: 8px;
+    transition: background 0.15s, box-shadow 0.15s;
+    box-shadow: 0 0 20px rgba(0,194,122,0.25);
+    letter-spacing: 0.01em;
+  }
 
-    code {
-      display: inline-block;
-      padding: 3px 7px;
-      border-radius: 7px;
-      background: rgba(30, 41, 59, 0.85);
-      border: 1px solid rgba(148, 163, 184, 0.2);
-      color: #dbeafe;
-      font-family: Consolas, monospace;
-      font-size: 14px;
-    }
+  .btn-green:hover {
+    background: #00d988;
+    box-shadow: 0 0 30px rgba(0,194,122,0.4);
+  }
 
-    ol {
-      margin: 0;
-      padding-left: 22px;
-      color: #f8fafc;
-      font-size: 15px;
-      line-height: 1.7;
-    }
+  .btn-outline {
+    display: block;
+    width: 100%;
+    background: transparent;
+    color: #00c27a;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: center;
+    padding: 12px 16px;
+    border-radius: 9px;
+    text-decoration: none;
+    margin-bottom: 8px;
+    border: 1px solid #1d3028;
+    transition: background 0.15s, border-color 0.15s;
+  }
 
-    li {
-      margin-bottom: 8px;
-    }
+  .btn-outline:hover {
+    background: #0f1a14;
+    border-color: #2e5040;
+  }
 
-    .link {
-      color: #60a5fa;
-      text-decoration: none;
-      font-weight: 700;
-    }
+  /* accordion button */
+  .acc-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    background: #1c1c1c;
+    border: 1px solid #282828;
+    color: #888;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 9px 13px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+    text-align: left;
+  }
 
-    .warning {
-      margin-top: 20px;
-      padding: 14px;
-      border-radius: 12px;
-      background: rgba(30, 41, 59, 0.45);
-      border: 1px solid rgba(148, 163, 184, 0.18);
-      color: #cbd5e1;
-      font-size: 14px;
-      line-height: 1.5;
-    }
+  .acc-btn:hover { background: #222; border-color: #333; color: #bbb; }
+  .acc-btn.open  { border-color: #1d3028; color: #00c27a; background: #0f1a14; }
 
-    @media (max-width: 850px) {
-      body {
-        align-items: flex-start;
-      }
+  .acc-btn svg.ic { width: 14px; height: 14px; flex-shrink: 0; }
 
-      .grid {
-        grid-template-columns: 1fr;
-      }
+  .acc-btn .chevron {
+    margin-left: auto;
+    flex-shrink: 0;
+    width: 13px; height: 13px;
+    transition: transform 0.25s;
+  }
 
-      h1 {
-        font-size: 22px;
-      }
+  .acc-btn.open .chevron { transform: rotate(180deg); }
 
-      .wrapper {
-        padding: 22px;
-      }
+  /* accordion panel */
+  .acc-panel {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.35s ease, opacity 0.3s ease;
+  }
 
-      .btn {
-        width: 100%;
-        text-align: center;
-      }
-    }
-  </style>
+  .acc-panel.open {
+    max-height: 900px;
+    opacity: 1;
+  }
+
+  /* video inner */
+  .video-inner {
+    margin-top: 8px;
+    background: #0e0e0e;
+    border: 1px solid #222;
+    border-radius: 10px;
+    overflow: hidden;
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .video-inner video { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+  .video-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: #2a2a2a;
+    font-size: 12px;
+    text-align: center;
+    padding: 20px;
+  }
+
+  .video-placeholder svg { width: 32px; height: 32px; stroke: #2a2a2a; }
+
+  /* code block */
+  .code-inner {
+    margin-top: 8px;
+    background: #0e0e0e;
+    border: 1px solid #222;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .code-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-bottom: 1px solid #1e1e1e;
+    background: #111;
+  }
+
+  .code-lang {
+    font-size: 11px;
+    color: #383838;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .copy-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #1a1a1a;
+    border: 1px solid #2a2a2a;
+    color: #777;
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s, background 0.15s;
+  }
+
+  .copy-btn:hover { color: #00c27a; border-color: #1d3028; background: #111; }
+  .copy-btn.copied { color: #00c27a; border-color: #1d3028; }
+  .copy-btn svg { width: 12px; height: 12px; }
+
+  .code-scroll {
+    overflow: auto;
+    max-height: 320px;
+  }
+
+  .code-block {
+    padding: 14px;
+    font-family: 'Courier New', monospace;
+    font-size: 11.5px;
+    line-height: 1.75;
+    color: #777;
+    white-space: pre;
+    tab-size: 2;
+    display: block;
+    width: max-content;
+    min-width: 100%;
+  }
+
+  .k  { color: #c586c0; }
+  .s  { color: #ce9178; }
+  .v  { color: #9cdcfe; }
+  .n  { color: #dcdcaa; }
+  .p  { color: #666; }
+  .cm { color: #2e5c35; }
+
+  .hint {
+    font-size: 12.5px;
+    color: #666;
+    line-height: 1.6;
+    margin-top: 10px;
+  }
+
+  .hint code {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    background: #1c1c1c;
+    color: #888;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #2e2e2e;
+  }
+
+  /* steps */
+  .steps { list-style: none; }
+
+  .steps > li {
+    display: flex;
+    gap: 10px;
+    font-size: 13px;
+    color: #666;
+    line-height: 1.65;
+    padding: 5px 0;
+    min-width: 0;
+  }
+
+  .steps > li > span { min-width: 0; word-break: break-word; }
+
+  .steps li b { color: #ccc; font-weight: 600; }
+
+  .steps li a { color: #00c27a; text-decoration: none; }
+  .steps li a:hover { text-decoration: underline; }
+
+  .steps li code {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    background: #1c1c1c;
+    color: #777;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid #272727;
+    white-space: nowrap;
+  }
+
+  .step-n {
+    font-size: 12px;
+    color: #333;
+    min-width: 18px;
+    flex-shrink: 0;
+    padding-top: 3px;
+    font-weight: 700;
+  }
+
+  /* code acc inside step */
+  .step-code-acc { margin-top: 7px; }
+
+  .gap { margin-top: 10px; }
+</style>
 </head>
-
 <body>
-  <main class="wrapper">
-    <div class="header">
-      <div class="icon">💳</div>
+<div class="outer">
+<div class="card">
 
-      <div>
-        <h1>Ссылка на оплату — инструкция</h1>
-        <p class="subtitle">
-          Самый простой способ — нажмите кнопку ниже и следуйте дальнейшим шагам.
-        </p>
+  <div class="header">
+    <div class="icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
+      </svg>
+    </div>
+    <div class="header-text">
+      <h1>Ссылка на оплату ChatGPT — старый Stripe</h1>
+      <p>Самый простой способ — перетащите кнопку в закладки и нажмите её на <b>chatgpt.com</b>.</p>
+    </div>
+  </div>
+
+  <div class="cols">
+
+    <!-- LEFT -->
+    <div class="col-left">
+      <div class="col-title">Вариант 1 — кнопка‑закладка (рекомендуется)</div>
+
+      <div class="tip">
+        Совет: <b>Зажмите ЛКМ и перетащите</b> кнопку ниже на панель закладок. Если не получается — <b>клик правой кнопкой (ПКМ)</b> → «Добавить в закладки». На <b>chatgpt.com</b> просто нажмите эту закладку.
       </div>
+
+      <a class="btn-green"
+         href="javascript:(async()=>{try{const s=await fetch('/api/auth/session',{credentials:'include'});const j=await s.json();if(!j?.accessToken){alert('%D0%97%D0%B0%D0%B9%D0%B4%D0%B8%D1%82%D0%B5%20%D0%BD%D0%B0%20chatgpt.com%20%D0%BF%D0%BE%D0%B4%20%D1%81%D0%B2%D0%BE%D0%B8%D0%BC%20%D0%B0%D0%BA%D0%BA%D0%B0%D1%83%D0%BD%D1%82%D0%BE%D0%BC%20%D0%B8%20%D0%BF%D0%BE%D0%BF%D1%80%D0%BE%D0%B1%D1%83%D0%B9%D1%82%D0%B5%20%D1%81%D0%BD%D0%BE%D0%B2%D0%B0');return}const a={plan_name:'chatgptplusplan',billing_details:{country:'PH',currency:'PHP'},promo_code:null,checkout_ui_mode:'redirect'};const r=await fetch('https://chatgpt.com/backend-api/payments/checkout',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json','authorization':`Bearer ${j.accessToken}`},body:JSON.stringify(a)});const d=await r.json();if(!d?.url){alert('%D0%9D%D0%B5%20%D1%83%D0%B4%D0%B0%D0%BB%D0%BE%D1%81%D1%8C%20%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B8%D1%82%D1%8C%20%D1%81%D1%81%D1%8B%D0%BB%D0%BA%D1%83.');return}prompt('%D0%A1%D0%BA%D0%BE%D0%BF%D0%B8%D1%80%D1%83%D0%B9%D1%82%D0%B5%20%D1%81%D1%81%D1%8B%D0%BB%D0%BA%D1%83:',d.url);}catch(e){alert('%D0%9E%D1%88%D0%B8%D0%B1%D0%BA%D0%B0: '+(e&&e.message?e.message:e))}})();"
+         title="Перетащите в панель закладок">
+        Получить ссылку Stripe
+      </a>
+
+      <a class="btn-outline" href="https://chatgpt.com" target="_blank">
+        Открыть chatgpt.com
+      </a>
+
+      <button class="acc-btn" id="vbtn1" onclick="toggleAcc('vpanel1','vbtn1','vid1')">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Видео-инструкция (вариант 1)
+        <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+
+      <div class="acc-panel" id="vpanel1">
+        <div class="video-inner" id="vi1">
+          <video id="vid1" controls preload="none" src="video1.mp4"></video>
+        </div>
+      </div>
+
+      <p class="hint" style="margin-top:10px;">После клика по закладке появится окно со ссылкой вида <code>https://pay.openai.com/c/pay/...</code> — скопируйте её.</p>
     </div>
 
-    <section class="grid">
-      <div class="card">
-        <h2>Вариант 1 — кнопка оплаты</h2>
+    <!-- RIGHT -->
+    <div class="col-right">
+      <div class="col-title">Вариант 2 — альтернативный способ (через консоль)</div>
 
-        <div class="note">
-          Совет: нажмите зелёную кнопку ниже, чтобы получить ссылку на оплату.
-          После этого откройте сайт и завершите оформление.
-        </div>
+      <ol class="steps">
+        <li>
+          <span class="step-n">1.</span>
+          <span>Зайдите на сайт <a href="https://chatgpt.com" target="_blank">https://chatgpt.com</a> и войдите в свой аккаунт.</span>
+        </li>
+        <li>
+          <span class="step-n">2.</span>
+          <span>Нажмите <b>F12</b> (или <b>Ctrl+Shift+I</b>) — откроется окно разработчика.</span>
+        </li>
+        <li>
+          <span class="step-n">3.</span>
+          <span>Перейдите во вкладку <b>Console</b>.</span>
+        </li>
+        <li>
+          <span class="step-n">4.</span>
+          <span>
+            Напишите <code>allow pasting</code> → <b>Enter</b>, затем раскройте код ниже, скопируйте и вставьте в консоль.
+            <div class="step-code-acc">
+              <button class="acc-btn" id="cbtn" onclick="toggleAcc('cpanel','cbtn',null)">
+                <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                Показать код для консоли
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="acc-panel" id="cpanel">
+                <div class="code-inner">
+                  <div class="code-topbar">
+                    <span class="code-lang">javascript</span>
+                    <button class="copy-btn" id="copybtn" onclick="copyCode()">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                      <span id="copylabel">Скопировать</span>
+                    </button>
+                  </div>
+                  <div class="code-scroll">
+<div class="code-block"><span class="k">const</span> <span class="v">a</span> <span class="p">=</span> <span class="p">{</span>
+  <span class="v">plan_name</span><span class="p">:</span> <span class="s">'chatgptplusplan'</span><span class="p">,</span>
+  <span class="v">billing_details</span><span class="p">:</span> <span class="p">{</span> <span class="v">country</span><span class="p">:</span> <span class="s">'US'</span><span class="p">,</span> <span class="v">currency</span><span class="p">:</span> <span class="s">'USD'</span> <span class="p">},</span>
+  <span class="v">promo_code</span><span class="p">:</span> <span class="k">null</span><span class="p">,</span>
+  <span class="v">checkout_ui_mode</span><span class="p">:</span> <span class="s">'redirect'</span><span class="p">,</span>
+<span class="p">};</span>
 
-        <button class="btn btn-green" onclick="getPaymentLink()">
-          Получить ссылку Stripe
+<span class="k">const</span> <span class="v">authReq</span> <span class="p">=</span> <span class="k">await</span> <span class="n">fetch</span><span class="p">(</span><span class="s">'/api/auth/session'</span><span class="p">,</span> <span class="p">{</span> <span class="v">credentials</span><span class="p">:</span> <span class="s">'include'</span> <span class="p">});</span>
+<span class="k">const</span> <span class="v">authRes</span> <span class="p">=</span> <span class="k">await</span> <span class="v">authReq</span><span class="p">.</span><span class="n">json</span><span class="p">();</span>
+<span class="k">const</span> <span class="v">authToken</span> <span class="p">=</span> <span class="v">authRes</span><span class="p">.</span><span class="v">accessToken</span><span class="p">;</span>
+
+<span class="k">const</span> <span class="v">res</span> <span class="p">=</span> <span class="k">await</span> <span class="n">fetch</span><span class="p">(</span><span class="s">'https://chatgpt.com/backend-api/payments/checkout'</span><span class="p">,</span> <span class="p">{</span>
+  <span class="v">body</span><span class="p">:</span> <span class="n">JSON</span><span class="p">.</span><span class="n">stringify</span><span class="p">(</span><span class="v">a</span><span class="p">),</span>
+  <span class="v">method</span><span class="p">:</span> <span class="s">'POST'</span><span class="p">,</span>
+  <span class="v">credentials</span><span class="p">:</span> <span class="s">'include'</span><span class="p">,</span>
+  <span class="v">headers</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">'Content-Type'</span><span class="p">:</span> <span class="s">'application/json'</span><span class="p">,</span>
+    <span class="v">authorization</span><span class="p">:</span> <span class="s">`Bearer <span class="p">${</span><span class="v">authToken</span><span class="p">}</span>`</span><span class="p">,</span>
+  <span class="p">},</span>
+<span class="p">});</span>
+
+<span class="k">const</span> <span class="v">data</span> <span class="p">=</span> <span class="k">await</span> <span class="v">res</span><span class="p">.</span><span class="n">json</span><span class="p">();</span>
+
+<span class="v">data</span><span class="p">.</span><span class="v">url</span><span class="p">;</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </span>
+        </li>
+        <li>
+          <span class="step-n">5.</span>
+          <span>Нажмите <b>Enter</b> — в консоли появится ссылка, начинающаяся с <code>https://pay.openai.com/c/pay/...</code></span>
+        </li>
+        <li>
+          <span class="step-n">6.</span>
+          <span>Скопируйте эту ссылку и отправьте её <b>нам</b>.</span>
+        </li>
+      </ol>
+
+      <div class="gap">
+        <button class="acc-btn" id="vbtn2" onclick="toggleAcc('vpanel2','vbtn2','vid2')">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Видео-инструкция (вариант 2)
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
         </button>
-
-        <a class="btn btn-blue" href="https://chatgpt.com/" target="_blank">
-          Открыть chatgpt.com
-        </a>
-
-        <p class="small">
-          После нажатия появится ссылка вида
-          <code>https://checkout.stripe.com/...</code>
-          — скопируйте её и откройте в браузере.
-        </p>
-      </div>
-
-      <div class="card">
-        <h2>Вариант 2 — альтернативный способ</h2>
-
-        <ol>
-          <li>Откройте сайт <b>chatgpt.com</b>.</li>
-          <li>Войдите в свой аккаунт.</li>
-          <li>Перейдите в раздел оплаты.</li>
-          <li>Выберите нужный тариф.</li>
-          <li>Получите ссылку на оплату.</li>
-          <li>Скопируйте ссылку и используйте её для оплаты.</li>
-          <li>После оплаты обновите страницу аккаунта.</li>
-        </ol>
-
-        <div class="warning">
-          Если вместо Stripe-ссылки появляется другая страница оплаты,
-          значит для аккаунта включён другой способ оплаты.
+        <div class="acc-panel" id="vpanel2">
+          <div class="video-inner" id="vi2">
+            <video id="vid2" controls preload="none" src="video2.mp4"></video>
+          </div>
         </div>
       </div>
-    </section>
-  </main>
 
-  <script>
-    function getPaymentLink() {
-      const paymentLink = "https://checkout.stripe.com/...";
-      navigator.clipboard.writeText(paymentLink);
+    </div>
+  </div>
+</div>
+</div>
 
-      alert("Ссылка скопирована: " + paymentLink);
-    }
-  </script>
+<script>
+/* check video files exist, show placeholder if not */
+window.addEventListener('load', function() {
+  ['vid1','vid2'].forEach(function(id, i) {
+    var v = document.getElementById(id);
+    if (!v) return;
+    v.addEventListener('error', function() {
+      var inner = document.getElementById('vi' + (i+1));
+      if (inner) inner.innerHTML = '<div class="video-placeholder"><svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg><span>Загрузите video' + (i+1) + '.mp4 рядом с HTML</span></div>';
+    });
+  });
+});
+
+function toggleAcc(panelId, btnId, vidId) {
+  var panel = document.getElementById(panelId);
+  var btn   = document.getElementById(btnId);
+  var isOpen = panel.classList.contains('open');
+  panel.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+  if (isOpen && vidId) {
+    var vid = document.getElementById(vidId);
+    if (vid && vid.pause) vid.pause();
+  }
+}
+
+var CODE_TEXT = "const a = {\n  plan_name: 'chatgptplusplan',\n  billing_details: { country: 'US', currency: 'USD' },\n  promo_code: null,\n  checkout_ui_mode: 'redirect',\n};\n\nconst authReq = await fetch('/api/auth/session', { credentials: 'include' });\nconst authRes = await authReq.json();\nconst authToken = authRes.accessToken;\n\nconst res = await fetch('https://chatgpt.com/backend-api/payments/checkout', {\n  body: JSON.stringify(a),\n  method: 'POST',\n  credentials: 'include',\n  headers: {\n    'Content-Type': 'application/json',\n    authorization: `Bearer ${authToken}`,\n  },\n});\n\nconst data = await res.json();\n\ndata.url;";
+
+function copyCode() {
+  navigator.clipboard.writeText(CODE_TEXT).then(function() {
+    var btn = document.getElementById('copybtn');
+    var lbl = document.getElementById('copylabel');
+    btn.classList.add('copied');
+    lbl.textContent = 'Скопировано!';
+    setTimeout(function() {
+      btn.classList.remove('copied');
+      lbl.textContent = 'Скопировать';
+    }, 2000);
+  });
+}
+</script>
 </body>
 </html>
