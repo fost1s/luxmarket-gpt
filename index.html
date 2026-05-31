@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ссылка на оплату</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      color: #f8fafc;
+      background:
+        radial-gradient(circle at top left, rgba(14, 165, 233, 0.22), transparent 32%),
+        radial-gradient(circle at top right, rgba(16, 185, 129, 0.18), transparent 30%),
+        linear-gradient(135deg, #020617, #0f172a 55%, #020617);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+
+    .wrapper {
+      width: 100%;
+      max-width: 950px;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      border-radius: 22px;
+      padding: 26px;
+      box-shadow: 0 25px 80px rgba(0, 0, 0, 0.45);
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 14px;
+      background: rgba(14, 165, 233, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      color: #67e8f9;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 26px;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 15px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 22px;
+    }
+
+    .card {
+      min-height: 360px;
+      padding: 22px;
+      border-radius: 18px;
+      background: rgba(2, 6, 23, 0.38);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      line-height: 1.35;
+    }
+
+    .note {
+      margin-bottom: 18px;
+      padding-left: 14px;
+      border-left: 3px solid #3b82f6;
+      color: #e2e8f0;
+      font-size: 15px;
+      line-height: 1.55;
+    }
+
+    .btn {
+      display: block;
+      width: fit-content;
+      min-width: 240px;
+      padding: 15px 22px;
+      margin: 12px 0;
+      border: none;
+      border-radius: 13px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.08);
+    }
+
+    .btn-green {
+      color: #031014;
+      background: linear-gradient(135deg, #34d399, #10b981);
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.28);
+    }
+
+    .btn-blue {
+      color: white;
+      background: linear-gradient(135deg, #60a5fa, #3b82f6);
+      box-shadow: 0 10px 30px rgba(59, 130, 246, 0.28);
+    }
+
+    .small {
+      margin-top: 18px;
+      color: #94a3b8;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    code {
+      display: inline-block;
+      padding: 3px 7px;
+      border-radius: 7px;
+      background: rgba(30, 41, 59, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      color: #dbeafe;
+      font-family: Consolas, monospace;
+      font-size: 14px;
+    }
+
+    ol {
+      margin: 0;
+      padding-left: 22px;
+      color: #f8fafc;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    .link {
+      color: #60a5fa;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .warning {
+      margin-top: 20px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(30, 41, 59, 0.45);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      color: #cbd5e1;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    @media (max-width: 850px) {
+      body {
+        align-items: flex-start;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 22px;
+      }
+
+      .wrapper {
+        padding: 22px;
+      }
+
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrapper">
+    <div class="header">
+      <div class="icon">💳</div>
+
+      <div>
+        <h1>Ссылка на оплату — инструкция</h1>
+        <p class="subtitle">
+          Самый простой способ — нажмите кнопку ниже и следуйте дальнейшим шагам.
+        </p>
+      </div>
+    </div>
+
+    <section class="grid">
+      <div class="card">
+        <h2>Вариант 1 — кнопка оплаты</h2>
+
+        <div class="note">
+          Совет: нажмите зелёную кнопку ниже, чтобы получить ссылку на оплату.
+          После этого откройте сайт и завершите оформление.
+        </div>
+
+        <button class="btn btn-green" onclick="getPaymentLink()">
+          Получить ссылку Stripe
+        </button>
+
+        <a class="btn btn-blue" href="https://chatgpt.com/" target="_blank">
+          Открыть chatgpt.com
+        </a>
+
+        <p class="small">
+          После нажатия появится ссылка вида
+          <code>https://checkout.stripe.com/...</code>
+          — скопируйте её и откройте в браузере.
+        </p>
+      </div>
+
+      <div class="card">
+        <h2>Вариант 2 — альтернативный способ</h2>
+
+        <ol>
+          <li>Откройте сайт <b>chatgpt.com</b>.</li>
+          <li>Войдите в свой аккаунт.</li>
+          <li>Перейдите в раздел оплаты.</li>
+          <li>Выберите нужный тариф.</li>
+          <li>Получите ссылку на оплату.</li>
+          <li>Скопируйте ссылку и используйте её для оплаты.</li>
+          <li>После оплаты обновите страницу аккаунта.</li>
+        </ol>
+
+        <div class="warning">
+          Если вместо Stripe-ссылки появляется другая страница оплаты,
+          значит для аккаунта включён другой способ оплаты.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function getPaymentLink() {
+      const paymentLink = "https://checkout.stripe.com/...";
+      navigator.clipboard.writeText(paymentLink);
+
+      alert("Ссылка скопирована: " + paymentLink);
+    }
+  </script>
+</body>
+</html>
